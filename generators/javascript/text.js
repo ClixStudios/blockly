@@ -24,8 +24,7 @@ Blockly.JavaScript['text'] = function(block) {
 Blockly.JavaScript['text_multiline'] = function(block) {
   // Text value.
   var code = Blockly.JavaScript.multiline_quote_(block.getFieldValue('TEXT'));
-  var order = code.indexOf('+') != -1 ? Blockly.JavaScript.ORDER_ADDITION :
-      Blockly.JavaScript.ORDER_ATOMIC;
+  var order = code.indexOf('+') != -1 ? Blockly.JavaScript.ORDER_ADDITION : Blockly.JavaScript.ORDER_ATOMIC;
   return [code, order];
 };
 

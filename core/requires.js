@@ -62,6 +62,7 @@ goog.require('Blockly.FieldTextInput');
 goog.require('Blockly.FieldMultilineInput');
 goog.require('Blockly.FieldNumber');
 goog.require('Blockly.FieldVariable');
+goog.require('Blockly.FieldExpandableInput');
 
 
 // Blockly Renderers.
