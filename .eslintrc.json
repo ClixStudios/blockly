@@ -83,7 +83,7 @@
         "goog": true
     },
     "extends": [
-        "eslint:recommended",
-        "plugin:es5/no-es2015"
+        "eslint:recommended"
+        //"plugin:es5/no-es2015"
     ]
 }

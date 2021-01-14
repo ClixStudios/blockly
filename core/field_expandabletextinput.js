@@ -16,9 +16,9 @@ goog.provide('Blockly.FieldExpandableInput');
 
 goog.require("Blockly.FieldTextInput");
 
-Blockly.FieldExpandableInput = function(opt_value, opt_validator) {
-  this.textAreaWidth = this.textAreaWidth || 82;
-  this.textAreaHeight = this.textAreaHeight || 17;
+Blockly.FieldExpandableInput = function (opt_value, opt_validator) {
+  this.textAreaWidth = this.textAreaWidth || 86; // 85
+  this.textAreaHeight = this.textAreaHeight || 17; // 17
 
   opt_value = this.doClassValidation_(opt_value);
   if (opt_value === null) {
@@ -39,7 +39,7 @@ Blockly.utils.object.inherits(Blockly.FieldExpandableInput, Blockly.FieldTextInp
  * @package
  * @nocollapse
  */
-Blockly.FieldExpandableInput.fromJson = function(options) {
+Blockly.FieldExpandableInput.fromJson = function (options) {
   var text = Blockly.utils.replaceMessageReferences(options['text']);
   return new Blockly.FieldExpandableInput(text, undefined, options);
 };
@@ -52,13 +52,13 @@ Blockly.FieldExpandableInput.fromJson = function(options) {
  * @return {!Element} The element containing info about the field's state.
  * @package
  */
-Blockly.FieldExpandableInput.prototype.toXml = function(fieldElement) {
+Blockly.FieldExpandableInput.prototype.toXml = function (fieldElement) {
   // Replace '\n' characters with html-escaped equivalent '&#10'. This is
   // needed so the plain-text representation of the xml produced by
   // `Blockly.Xml.domToText` will appear on a single line (this is a limitation
   // of the plain-text format).
   fieldElement.textContent = this.getValue();
-  
+
   fieldElement.setAttribute("width", this.textAreaWidth || 12);
   fieldElement.setAttribute("height", this.textAreaHeight || 13);
 
@@ -76,16 +76,16 @@ Blockly.FieldExpandableInput.prototype.toXml = function(fieldElement) {
  *    field's state.
  * @package
  */
-Blockly.FieldExpandableInput.prototype.fromXml = function(fieldElement) {
-  
+Blockly.FieldExpandableInput.prototype.fromXml = function (fieldElement) {
+
   this.textAreaHeight = parseInt(fieldElement.getAttribute("height"));
   this.textAreaWidth = parseInt(fieldElement.getAttribute("width"));
-  
-  
+
+
   this.setValue(fieldElement.textContent);
   //! Below has been commented out because new line functionality shouldn't be used on Expandable Text Inputs.
   //? .replace(/&#10;/g, '\n'));
-  
+
 };
 
 
@@ -93,13 +93,13 @@ Blockly.FieldExpandableInput.prototype.fromXml = function(fieldElement) {
  * Create the block UI for this field.
  * @package
  */
-Blockly.FieldExpandableInput.prototype.initView = function() {
+Blockly.FieldExpandableInput.prototype.initView = function () {
 
   this.createBorderRect_();
   this.textGroup_ = Blockly.utils.dom.createSvgElement(
-      Blockly.utils.Svg.G, {
-        'class': 'blocklyEditableText',
-      }, this.fieldGroup_);
+    Blockly.utils.Svg.G, {
+    'class': 'blocklyEditableText',
+  }, this.fieldGroup_);
 
 };
 
@@ -110,45 +110,53 @@ Blockly.FieldExpandableInput.prototype.initView = function() {
  * @return {string} Currently displayed text.
  * @private
  */
-Blockly.FieldExpandableInput.prototype.getDisplayText_ = function() {
-  // var textLines = this.getText();
+Blockly.FieldExpandableInput.prototype.getDisplayText_ = function () {
+  var textLines = this.getText();
 
-  // if (!textLines) {
-  //   // Prevent the field from disappearing if empty.
-  //   return Blockly.Field.NBSP;
-  // }
+  if (!textLines) {
+    // Prevent the field from disappearing if empty.
+    return Blockly.Field.NBSP;
+  }
 
-  // // Break input text into individual lines of text (broken down by "\n")
-  // var lines = textLines.split('\n');
-  // textLines = 'baba ';
-  
-  // for (var i = 0; i < lines.length; i++) {
-  //   var text = lines[i];
+  // Break input text into individual lines of text (broken down by "\n")
+  var lines = textLines.split('\n');
+  textLines = '';
 
-  //   // if (text.length > this.maxDisplayLength) {
-  //   //   // Truncate displayed string and add an ellipsis ('...').
-  //   //   text = text.substring(0, this.maxDisplayLength - 4) + '...';
-  //   // }
-  //   // Replace whitespace with non-breaking spaces so the text doesn't collapse.
-  //   text = text.replace(/\s/g, Blockly.Field.NBSP);
+  for (var i = 0; i < lines.length; i++) {
+    var text = lines[i];
 
-  //   textLines += text;
+    var wordArray = text.split(' ');
 
-  //   // If this isn't the last line, add a linebreak
-  //   if (i !== lines.length - 1) {
-  //     textLines += '\n';
-  //   }
-  // }
-  // if (this.sourceBlock_.RTL) {
-  //   // The SVG is LTR, force value to be RTL.
-  //   textLines += '\u200F';
-  // }
+    for (var i = 0; i < wordArray.length; i++) {
+      if (i !== wordArray.length - 1) wordArray[i] += " ";
+    }
 
-  // textLines += ' boo-ey';
+    var currentLineWidth = 0;
 
-  // return textLines;
-  
-  return "Click to edit";
+    for (var i = 0; i < wordArray.length; i++) {
+
+      //* Calculate word width
+      var wordWidth = Blockly.utils.dom.getCachelessTextWidth(wordArray[i] + " ", "11pt", "normal", "sans-serif");
+
+      if (currentLineWidth + wordWidth > this.textAreaWidth + 10 + 35) {
+
+        //* Add a "\n" to the end of the Trimmed string // Blockly.Field.NBSP
+        wordArray[i - 1] = wordArray[i - 1] + "\n";
+
+        //* Reset current line width to just that of the new word
+        currentLineWidth = wordWidth;
+      } else currentLineWidth += wordWidth;
+    }
+  }
+
+  var returnThing = wordArray.join('');
+
+  if (this.sourceBlock_.RTL) {
+    // The SVG is LTR, force value to be RTL.
+    returnThing += '\u200F';
+  }
+
+  return returnThing;
 };
 
 
@@ -158,7 +166,7 @@ Blockly.FieldExpandableInput.prototype.getDisplayText_ = function() {
  * Updates the text of the textElement.
  * @protected
  */
-Blockly.FieldExpandableInput.prototype.render_ = function() {
+Blockly.FieldExpandableInput.prototype.render_ = function () {
   // Remove all text group children.
   var currentChild;
 
@@ -171,14 +179,14 @@ Blockly.FieldExpandableInput.prototype.render_ = function() {
   var y = 0;
   for (var i = 0; i < lines.length; i++) {
     var lineHeight = this.getConstants().FIELD_TEXT_HEIGHT +
-        this.getConstants().FIELD_BORDER_RECT_Y_PADDING;
+      this.getConstants().FIELD_BORDER_RECT_Y_PADDING;
     var span = Blockly.utils.dom.createSvgElement(
-        Blockly.utils.Svg.TEXT, {
-          'class': 'blocklyText blocklyMultilineText',
-          x: this.getConstants().FIELD_BORDER_RECT_X_PADDING,
-          y: y + this.getConstants().FIELD_BORDER_RECT_Y_PADDING,
-          dy: this.getConstants().FIELD_TEXT_BASELINE
-        }, this.textGroup_);
+      Blockly.utils.Svg.TEXT, {
+      'class': 'blocklyText blocklyMultilineText',
+      x: this.getConstants().FIELD_BORDER_RECT_X_PADDING,
+      y: y + this.getConstants().FIELD_BORDER_RECT_Y_PADDING,
+      dy: this.getConstants().FIELD_TEXT_BASELINE
+    }, this.textGroup_);
     span.appendChild(document.createTextNode(lines[i]));
     y += lineHeight;
   }
@@ -198,11 +206,11 @@ Blockly.FieldExpandableInput.prototype.render_ = function() {
     if (!this.isTextValid_) {
       Blockly.utils.dom.addClass(htmlInput, 'blocklyInvalidInput');
       Blockly.utils.aria.setState(htmlInput,
-          Blockly.utils.aria.State.INVALID, true);
+        Blockly.utils.aria.State.INVALID, true);
     } else {
       Blockly.utils.dom.removeClass(htmlInput, 'blocklyInvalidInput');
       Blockly.utils.aria.setState(htmlInput,
-          Blockly.utils.aria.State.INVALID, false);
+        Blockly.utils.aria.State.INVALID, false);
     }
   }
 };
@@ -212,7 +220,7 @@ Blockly.FieldExpandableInput.prototype.render_ = function() {
  * Updates the size of the field based on the text.
  * @protected
  */
-Blockly.FieldExpandableInput.prototype.updateSize_ = function() {
+Blockly.FieldExpandableInput.prototype.updateSize_ = function () {
   var nodes = this.textGroup_.childNodes;
   var totalWidth = this.textAreaWidth;
   var totalHeight = this.textAreaHeight;
@@ -227,8 +235,15 @@ Blockly.FieldExpandableInput.prototype.updateSize_ = function() {
   //   totalHeight += this.getConstants().FIELD_TEXT_HEIGHT +
   //       (i > 0 ? this.getConstants().FIELD_BORDER_RECT_Y_PADDING : 0);
   // }
-  
-  
+
+  for (var i = 0; i < nodes.length; i++) {
+    var tspan = /** @type {!Element} */ (nodes[i]);
+    var textWidth = Blockly.utils.dom.getTextWidth(tspan);
+    // console.log(nodes[i]);
+    // console.log("index: ", i, " textWidth:", textWidth);
+  }
+
+
   if (this.borderRect_) {
     totalHeight += this.getConstants().FIELD_BORDER_RECT_Y_PADDING * 2;
     totalWidth += this.getConstants().FIELD_BORDER_RECT_X_PADDING * 2;
@@ -247,7 +262,7 @@ Blockly.FieldExpandableInput.prototype.updateSize_ = function() {
  * @return {!HTMLTextAreaElement} The newly created text input editor.
  * @protected
  */
-Blockly.FieldExpandableInput.prototype.widgetCreate_ = function() {
+Blockly.FieldExpandableInput.prototype.widgetCreate_ = function () {
   var div = /** @type {HTMLDivElement} */ (Blockly.WidgetDiv.DIV);
   var scale = this.workspace_.getScale();
 
@@ -263,9 +278,9 @@ Blockly.FieldExpandableInput.prototype.widgetCreate_ = function() {
 
   var paddingX = this.getConstants().FIELD_BORDER_RECT_X_PADDING * scale;
   var paddingY = this.getConstants().FIELD_BORDER_RECT_Y_PADDING * scale / 2;
-  
+
   htmlInput.style.padding = paddingY + 'px ' + paddingX + 'px ' + paddingY + 'px ' + paddingX + 'px';
-  
+
   var lineHeight = this.getConstants().FIELD_TEXT_HEIGHT + this.getConstants().FIELD_BORDER_RECT_Y_PADDING;
   htmlInput.style.lineHeight = (lineHeight * scale) + 'px';
 
@@ -276,21 +291,13 @@ Blockly.FieldExpandableInput.prototype.widgetCreate_ = function() {
   htmlInput.oldValue_ = null;
 
   var field = this;
-  
-  htmlInput.addEventListener("click", function(event){ 
-    
+
+  htmlInput.addEventListener("click", function (event) {
     field.textAreaHeight = event.target.clientHeight - (paddingY * 4);
-    field.textAreaWidth =  event.target.clientWidth - (paddingX * 2);
-
-    // console.log(field.maxDisplayLength);
-
-    // console.log(event);
-    // console.log(event.target);
-    console.log(event.target.textLength);
-
-
+    field.textAreaWidth = event.target.clientWidth - (paddingX * 2);
+    field.textAreaWidthRaw = event.target.clientWidth;
     field.render_();
-  }); 
+  });
 
   if (Blockly.utils.userAgent.GECKO) {
     // In FF, ensure the browser reflows before resizing to avoid issue #2777.
@@ -311,7 +318,7 @@ Blockly.FieldExpandableInput.prototype.widgetCreate_ = function() {
  * @param {!Event} e Keyboard event.
  * @protected
  */
-Blockly.FieldExpandableInput.prototype.onHtmlInputKeyDown_ = function(e) {
+Blockly.FieldExpandableInput.prototype.onHtmlInputKeyDown_ = function (e) {
 };
 
 
@@ -321,11 +328,11 @@ Blockly.FieldExpandableInput.prototype.onHtmlInputKeyDown_ = function(e) {
 Blockly.Css.register([
   /* eslint-disable indent */
   '.blocklyHtmlExpandableTextAreaInput {',
-    'font-family: monospace;',
-    'resize: both;',
-    'overflow: hidden;',
-    'height: 100%;',
-    'text-align: left;',
+  'font-family: monospace;',
+  'resize: both;',
+  'overflow: hidden;',
+  'height: 100%;',
+  'text-align: left;',
   '}'
   /* eslint-enable indent */
 ]);
